@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SHADOWSTEP (β) – 對戰電腦</title>
 <style>html,body{margin:0;height:100%;overflow:hidden;background:#f3d3b8}#hud{position:fixed;left:12px;top:10px;color:#fff;font:13px sans-serif;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:8px}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script>(function(){var q=null;try{q=new URLSearchParams(location.search).get('lang')}catch(e){}var s=null;try{s=localStorage.getItem('ss_lang')}catch(e){}var n=(navigator.language||'').toLowerCase();var L=q||s||(n.indexOf('zh')===0?'zh':n.indexOf('ja')===0?'ja':'en');if(L!=='zh'&&L!=='en'&&L!=='ja')L='en';if(q){try{localStorage.setItem('ss_lang',L)}catch(e){}}window.SSLANG=L;document.documentElement.lang=L==='zh'?'zh-Hant':L;})();</script><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head><body><div id="loading" style="position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#fff3e2,#f3d3b8 70%);color:#4a3426;font-family:'Noto Sans TC',sans-serif;transition:opacity .6s">
 <div style="font:bold 34px/1 Impact,'Arial Narrow',sans-serif;letter-spacing:3px">SHADOW<span style="color:#e8891e">STEP</span></div>
 <div style="margin-top:6px;font-size:14px;letter-spacing:4px;color:#8a6a52">影道須天歩 (β)</div>
@@ -10,7 +10,7 @@
 <div id="ldmsg" style="font-size:15px">遊戲載入中…</div>
 <div id="ldsub" style="margin-top:6px;font-size:12px;color:#8a6a52">第一次開啟約需幾秒鐘</div>
 <style>@keyframes ldsp{to{transform:rotate(360deg)}}</style></div>
-<script>setTimeout(function(){var e=document.getElementById('ldsub');if(e&&document.getElementById('loading'))e.textContent='載入比平常久，請確認網路連線，或稍候再重新整理';},20000);</script><div id="hud">SHADOWSTEP 風格化試作・拖曳旋轉／縮放</div>
+<script>(function(){var l=window.SSLANG;var M={en:['Loading…','First load takes a few seconds','Taking longer than usual – check your connection or reload later'],ja:['読み込み中…','初回は数秒かかります','通常より時間がかかっています。接続を確認するか、しばらくしてから再読み込みしてください']}[l];if(M){document.getElementById('ldmsg').textContent=M[0];document.getElementById('ldsub').textContent=M[1];}setTimeout(function(){var e=document.getElementById('ldsub');if(e&&document.getElementById('loading'))e.textContent=M?M[2]:'載入比平常久，請確認網路連線，或稍候再重新整理';},20000);})();</script><div id="hud">SHADOWSTEP 風格化試作・拖曳旋轉／縮放</div>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -141,7 +141,17 @@ paperClip(0.275-0.004,-0.012,Math.PI/2);
 // extra walls so every camera angle sees a room
 {const fw=new THREE.Mesh(new THREE.PlaneGeometry(6,3),flat(0xf4d3bd,1));fw.rotation.y=Math.PI;fw.position.set(0,0.6,1.3);scene.add(fw);const rw=new THREE.Mesh(new THREE.PlaneGeometry(6,3),flat(0xf1dccb,1));rw.rotation.y=-Math.PI/2;rw.position.set(1.4,0.6,0);scene.add(rw);}
 // ======================= SHADOWSTEP GAME (vs computer) =======================
-{const m=document.getElementById('ldmsg');if(m)m.textContent='準備角色與戰場…';}
+let LANG=window.SSLANG||'zh';
+const JA={'Preparing the field…':'フィールドを準備中…','Straight':'ストレート','Bank left':'左45°','Bank right':'右45°','Turn left':'左90°','Turn right':'右90°','U-turn':'Uターン',
+'Frog':'カエル','Rabbit':'ウサギ','Top view':'真上','Angled':'ななめ','Rules':'ルール','This will end the current game. Leave to read the full rules?':'現在の対局は終了します。全ルールのページへ移動しますか？',
+'Game setup':'ゲーム設定','Play as':'キャラ','Level':'難易度','Easy':'かんたん','Normal':'ふつう','Hard':'むずかしい','First':'先手','Me':'自分','Computer':'CPU','Random':'ランダム','Facing':'向き','Start':'スタート',
+'Str.':'直進','L45°':'左45°','R45°':'右45°','L90°':'左90°','R90°':'右90°','1st':'1歩','2nd':'2歩','Lock<br>in':'確定',
+'Computer is thinking…':'CPU思考中…','Plans revealed':'プロット公開','Reveal!':'公開！','(declare Fudō before placing the template)':'（不動はテンプレートを置く前に宣言）',
+'Turn 180°':'180°向きを変える','Place template':'テンプレートを置く','Use Fudō':'不動を使う','uses Fudō!':'不動を使用！','L':'左','R':'右','Landing check: ':'着地判定：','Confirm':'着地点を確定',
+'Out of bounds → lose':'場外 → 負け','Collision → lose':'接触 → 負け','Template touches their base → lose':'テンプレートが相手のベースに接触 → 負け','Shadowstep → win!':'影踏み → 勝ち！','Safe':'セーフ',
+'🎉 You win!':'🎉 勝ち！','Draw':'引き分け','You lose':'負け','Play again':'もう一度遊ぶ','You':'あなた',"Computer's plan: ":'CPUのプロット：'};
+const L=(zh,en,ja)=>LANG==='en'?en:LANG==='ja'?(ja!==undefined?ja:(JA[en]!==undefined?JA[en]:en)):zh;
+{const m=document.getElementById('ldmsg');if(m)m.textContent=L('準備角色與戰場…','Preparing the field…');}
 const TG={"straight":{"cx":-0.3631679972628241,"cy":19.884567257524456,"r":20.20197045116672,"a0":1.0765885482856181,"a1":2.0254442351250925,"poly":[[-7.865,38.732],[-9.218,37.97],[-9.218,0.085],[9.133,0.085],[9.133,37.632],[7.526,38.562],[5.9190000000000005,39.154],[3.3819999999999997,39.746],[1.0150000000000006,40.0],[-1.8609999999999998,40.0],[-1.9450000000000003,39.915],[-3.6369999999999996,39.831],[-5.835,39.408]]},"bank45":{"cx":-5.973643961611927,"cy":41.60584062089271,"r":22.471472370972958,"a0":1.9141137150210503,"a1":2.7811047266496787,"poly":[[-16.502,61.395],[-18.701,60.042],[-20.646,58.605],[-22.759999999999998,56.66],[-24.79,53.953],[-26.65,50.317],[-26.65,48.457],[-24.535999999999998,46.427],[-22.929,44.567],[-20.898999999999997,41.86],[-19.377,39.577],[-17.262999999999998,36.025],[-15.909999999999998,33.488],[-14.387999999999998,30.359],[-13.287999999999998,27.653],[-12.527,25.37],[-11.512999999999998,21.564],[-10.413,15.899],[-9.820999999999998,11.416],[-9.567999999999998,7.78],[-9.482999999999997,7.696],[-9.314,2.96],[-9.229,2.875],[-9.229,0.085],[9.291000000000004,0.085],[9.291000000000004,4.567],[9.206000000000003,4.651],[9.122,9.81],[9.036999999999999,9.894],[9.036999999999999,11.247],[8.953000000000003,11.332],[8.698999999999998,15.137],[8.191000000000003,18.943],[7.43,23.087],[6.585000000000001,26.723],[5.147000000000002,31.797],[3.371000000000002,37.125],[1.8490000000000002,40.846],[0.24200000000000088,44.059],[-1.8719999999999999,47.696],[-3.562999999999999,50.317],[-5.761999999999997,53.446],[-9.567999999999998,58.351],[-12.611999999999998,61.903],[-13.541999999999998,62.833]]},"turn90":{"cx":-13.834690215572284,"cy":37.76453141538623,"r":20.959657736822038,"a0":-2.6915989849926505,"a1":2.660829776461152,"poly":[[-32.516999999999996,47.526],[-33.785,43.89],[-34.293,41.776],[-34.714999999999996,38.816],[-34.714999999999996,35.349],[-34.461999999999996,33.573],[-34.038999999999994,31.882],[-33.108999999999995,29.514],[-32.601,28.668],[-28.541999999999998,28.33],[-25.159,27.822],[-22.537999999999997,27.23],[-20.169999999999995,26.469],[-17.378999999999998,25.116],[-15.856999999999996,24.017],[-14.757999999999996,22.918],[-13.404999999999998,20.888],[-11.881999999999998,17.928],[-10.867999999999999,15.137],[-10.444999999999997,13.531],[-10.021999999999998,11.332],[-9.598999999999997,7.696],[-9.429999999999996,2.622],[-9.344999999999999,2.537],[-9.344999999999999,0.085],[9.344000000000001,0.085],[9.259,5.412],[9.175000000000004,5.497],[9.175000000000004,6.765],[8.752000000000002,11.163],[7.991,16.068],[6.976000000000006,20.55],[5.623000000000005,24.863],[4.439,27.738],[2.663000000000004,31.036],[0.6330000000000027,33.827],[-3.171999999999997,37.632],[-6.554999999999996,40.338],[-9.598999999999997,42.283],[-12.981999999999996,43.975],[-16.702999999999996,45.328],[-21.269,46.427],[-26.934999999999995,47.188]]}};                       // template geometry, mm, origin = start-edge midpoint, +y forward, +x right (left-turn versions)
 TG.straight.cx=0;
 for(const k in TG){const g=TG[k]; if(g.a1-g.a0>Math.PI){const a=g.a0; g.a0=g.a1; g.a1=a+2*Math.PI;}}
@@ -150,7 +160,8 @@ const CORNER=D-BR*SQ2;
 const FAST=location.search.includes('fast');
 const KIND={S:{n:'straight',m:false,label:'直線',ic:'↑'},L45:{n:'bank45',m:false,label:'左 45°',ic:'↖'},R45:{n:'bank45',m:true,label:'右 45°',ic:'↗'},
             L90:{n:'turn90',m:false,label:'左 90°',ic:'↰'},R90:{n:'turn90',m:true,label:'右 90°',ic:'↱'},U:{label:'迴轉',ic:'⟲'}};
-const NAMES=['青蛙','兔子'];
+const LBL={S:['直線','Straight'],L45:['左 45°','Bank left'],R45:['右 45°','Bank right'],L90:['左 90°','Turn left'],R90:['右 90°','Turn right'],U:['迴轉','U-turn']};
+const lab=k=>L(...LBL[k]);const NAMES=()=>[L('青蛙','Frog'),L('兔子','Rabbit')];
 // ---------- geometry helpers ----------
 const fwd=r=>[Math.sin(r),Math.cos(r)], rgt=r=>[-Math.cos(r),Math.sin(r)];
 function toWorld(p,lx,ly){const f=fwd(p.r),rt=rgt(p.r),Fx=p.x+BR*f[0],Fz=p.z+BR*f[1];
@@ -296,19 +307,24 @@ const css=document.createElement('style');css.textContent=`
 #panel input[type=range]{flex:1;max-width:340px}
 #panel .plot{display:grid;grid-template-columns:auto auto auto;gap:5px 8px;align-items:center;justify-content:center}
 #panel .mvs{display:flex;gap:4px}
-#panel .mv{display:flex;flex-direction:column;align-items:center;min-width:44px;padding:4px 5px;line-height:1.1}
+#panel .mv{display:flex;flex-direction:column;align-items:center;min-width:41px;padding:4px 5px;line-height:1.1}
 #panel .mv b{font-size:17px;font-weight:normal}#panel .mv small{font-size:11px}
 #panel .plot .go{grid-column:3;grid-row:1/3;align-self:stretch;padding:6px 10px;white-space:nowrap;line-height:1.3}
 #st{font-weight:bold}
 #home{position:fixed;right:10px;top:120px;border:0;border-radius:10px;padding:6px 10px;background:rgba(255,246,232,.9);color:#4a3426;font:13px sans-serif;cursor:pointer}
+#lang{position:fixed;right:10px;top:156px;display:flex;border-radius:10px;overflow:hidden;background:rgba(255,246,232,.9)}
+#lang button{border:0;background:transparent;padding:6px 9px;font:12px sans-serif;color:#8a6a52;cursor:pointer}
+#lang button.on{background:#c8553d;color:#fff}
 #view{position:fixed;right:10px;top:84px;border:0;border-radius:10px;padding:6px 10px;background:rgba(255,246,232,.9);color:#4a3426;font:13px sans-serif}
-.lbl{color:#8a6a52;font-size:12.5px;white-space:nowrap}`;document.head.appendChild(css);
+.lbl{color:#8a6a52;font-size:12.5px;white-space:nowrap}
+html:lang(ja) #panel .mv small{font-size:10px;letter-spacing:-.3px;white-space:nowrap}
+html:lang(ja) #top,html:lang(ja) #panel,html:lang(ja) #rov .rbox,html:lang(ja) #panel button{font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',Meiryo,sans-serif}`;document.head.appendChild(css);
 const top=document.createElement('div');top.id='top';document.body.appendChild(top);
 const panel=document.createElement('div');panel.id='panel';document.body.appendChild(panel);
-const vbtn=document.createElement('button');vbtn.id='view';vbtn.textContent='俯視';document.body.appendChild(vbtn);
-const hbtn=document.createElement('button');hbtn.id='home';hbtn.textContent='規則';document.body.appendChild(hbtn);
+const vbtn=document.createElement('button');vbtn.id='view';vbtn.textContent=L('俯視','Top view');document.body.appendChild(vbtn);
+const hbtn=document.createElement('button');hbtn.id='home';hbtn.textContent=L('規則','Rules');document.body.appendChild(hbtn);
 // ---- in-game quick rules (overlay; never leaves the game) ----
-const rov=document.createElement('div');rov.id='rov';rov.innerHTML=`<div class="rbox">
+const rov=document.createElement('div');rov.id='rov';const ROV_ZH=`<div class="rbox">
 <button id="rclose" aria-label="關閉">✕</button>
 <h3>規則速查</h3>
 <p><b>目標</b>：底座踩到對手的影子就贏。出界或碰撞就輸。</p>
@@ -328,7 +344,50 @@ const rov=document.createElement('div');rov.id='rov';rov.innerHTML=`<div class="
 <h4>時間到</h4>
 <p>6 回合後離燈近的人贏；一樣近時，還留著不動的人贏。</p>
 <p class="rlink"><a id="rfull" href="index.html">看完整規則與圖解 →</a></p>
-</div>`;document.body.appendChild(rov);
+</div>`,ROV_EN=`<div class="rbox">
+<button id="rclose" aria-label="Close">✕</button>
+<h3>Quick rules</h3>
+<p><b>Goal</b>: step on your opponent's shadow with your base to win. Going out of bounds or colliding loses.</p>
+<h4>Each round</h4>
+<ol><li>The player closer to the light is the first player (on a tie, it passes to the other player).</li>
+<li>Both players secretly plot 2 steps, then reveal.</li>
+<li>First player step 1 → second player step 1 → first player step 2 → second player step 2.</li></ol>
+<h4>Moving</h4>
+<ul><li>Put the template's start against the front guide, <b>lift</b> the miniature and set its rear guide anywhere on the end arc.</li>
+<li><b>U-turn</b>: step 1 must be straight; step 2 turns the miniature 180° (it stays in place).</li></ul>
+<h4>Checks (after each step, only the moving player)</h4>
+<ol><li><b>Out of bounds</b>: base leaves the field → lose</li>
+<li><b>Collision</b>: your miniature touches theirs, or your template touches their base → lose (a U-turn only checks miniatures)</li>
+<li><b>Shadowstep</b>: your base touches their shadow → win!</li></ol>
+<h4>🪷 Fudō (once per game)</h4>
+<p>Declare before placing the template to cancel one of your own steps. A cancelled step is not checked.</p>
+<h4>Time's up</h4>
+<p>After round 6, the miniature closer to the light wins; on a tie, the player with Fudō unused wins.</p>
+<p class="rlink"><a id="rfull" href="index.html">Full rules with illustrations →</a></p>
+</div>`;
+const ROV_JA=`<div class="rbox">
+<button id="rclose" aria-label="閉じる">✕</button>
+<h3>クイックルール</h3>
+<p><b>目的</b>：ベースで相手の影を踏めば勝ち。場外や接触は負け。</p>
+<h4>各ラウンド</h4>
+<ol><li>ライトに近い方が先手（同じなら先手交代）。</li>
+<li>2人とも2歩をこっそりプロットし、同時に公開。</li>
+<li>先手1歩目 → 後手1歩目 → 先手2歩目 → 後手2歩目。</li></ol>
+<h4>移動</h4>
+<ul><li>テンプレートの始点を前マークに合わせ、ミニチュアを<b>持ち上げて</b>、後ろマークを終点の弧のどこかに合わせる。</li>
+<li><b>Uターン</b>：1歩目はストレート必須、2歩目で180°向きを変える（位置はそのまま）。</li></ul>
+<h4>判定（1歩ごと、移動した人だけ）</h4>
+<ol><li><b>場外</b>：ベースがフィールドから出た → 負け</li>
+<li><b>接触</b>：ミニチュア同士が触れた、またはテンプレートが相手のベースに触れた → 負け（Uターンはミニチュアの接触のみ）</li>
+<li><b>影踏み</b>：ベースが相手の影を踏んだ → 勝ち！</li></ol>
+<h4>🪷 不動（1ゲームに1回）</h4>
+<p>テンプレートを置く前に宣言し、自分の1歩を取り消す。取り消した1歩は判定しない。</p>
+<h4>タイムアップ</h4>
+<p>6ラウンド後、ライトに近い方の勝ち。同じ距離なら不動が残っている方の勝ち。</p>
+<p class="rlink"><a id="rfull" href="index.html">図解つきの全ルール →</a></p>
+</div>
+`;
+rov.innerHTML=L(ROV_ZH,ROV_EN,ROV_JA);document.body.appendChild(rov);
 const rcss=document.createElement('style');rcss.textContent=`
 #rov{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(40,28,20,.45);padding:12px}
 #rov.on{display:flex}
@@ -338,10 +397,11 @@ const rcss=document.createElement('style');rcss.textContent=`
 #rclose{position:absolute;right:10px;top:8px;border:0;background:#f1dcc2;border-radius:50%;width:32px;height:32px;font-size:16px;color:#4a3426;cursor:pointer}
 #rov .rlink{text-align:right;margin-top:10px}#rov a{color:#c8553d}`;document.head.appendChild(rcss);
 hbtn.onclick=()=>rov.classList.add('on');
-document.getElementById('rclose').onclick=()=>rov.classList.remove('on');
+function bindRov(){document.getElementById('rclose').onclick=()=>rov.classList.remove('on');
+document.getElementById('rfull').onclick=e=>{if(inGame()&&!confirm(L('目前的對局會結束，確定要離開遊戲去看完整規則嗎？','This will end the current game. Leave to read the full rules?')))e.preventDefault();else window.__leaving=true;};}
 rov.addEventListener('click',e=>{if(e.target===rov)rov.classList.remove('on');});
 const inGame=()=>G.round>=1&&!G.over;
-document.getElementById('rfull').onclick=e=>{if(inGame()&&!confirm('目前的對局會結束，確定要離開遊戲去看完整規則嗎？'))e.preventDefault();else window.__leaving=true;};
+bindRov();
 addEventListener('beforeunload',e=>{if(inGame()&&!window.__leaving){e.preventDefault();e.returnValue='';}});
 let topView=false;function camHome(){const s=G.human===0?-1:1;
   const por=innerWidth<innerHeight;cam.fov=por?52:34;cam.updateProjectionMatrix();
@@ -349,17 +409,31 @@ let topView=false;function camHome(){const s=G.human===0?-1:1;
   else if(por){cam.position.set(0.15,0.44,0.50*s);ctl.target.set(0,0,0.085*s);}
   else{cam.position.set(0.20,0.30,0.46*s);ctl.target.set(0,0,0.04*s);}ctl.update();}
 addEventListener('resize',()=>camHome());
-vbtn.onclick=()=>{topView=!topView;vbtn.textContent=topView?'斜視':'俯視';camHome();};
-const h=(html)=>{panel.innerHTML=html;};
+const lbtn=document.createElement('div');lbtn.id='lang';lbtn.innerHTML='<button data-l="zh">中</button><button data-l="en">EN</button><button data-l="ja">日</button>';document.body.appendChild(lbtn);
+function setLang(l){LANG=l;try{localStorage.setItem('ss_lang',l);}catch(e){}document.documentElement.lang=l==='zh'?'zh-Hant':l;
+  [...lbtn.children].forEach(b=>b.classList.toggle('on',b.dataset.l===l));
+  vbtn.textContent=topView?L('斜視','Angled'):L('俯視','Top view');hbtn.textContent=L('規則','Rules');
+  rov.innerHTML=L(ROV_ZH,ROV_EN,ROV_JA);bindRov();
+  if(curFn){panel.innerHTML=curFn();if(curAfter)curAfter();bindWait();}
+  drawTop(lastExtra);}
+lbtn.onclick=e=>{const l=e.target.dataset&&e.target.dataset.l;if(l)setLang(l);};
+[...lbtn.children].forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
+vbtn.onclick=()=>{topView=!topView;vbtn.textContent=topView?L('斜視','Angled'):L('俯視','Top view');camHome();};
+let curFn=null,curAfter=null,curWait=null,lastExtra='';
+const h=(x,after)=>{curFn=typeof x==='function'?x:()=>x;curAfter=after||null;panel.innerHTML=curFn();if(curAfter)curAfter();};
 const fmt=m=>(m*1000).toFixed(0)+'mm';
-const pl=k=>KIND[k].ic+' '+KIND[k].label;
-function drawTop(extra=''){if(!G.P)return;const H=G.human,A=1-H;
-  let t=`第 <b>${G.round||1}</b>/6 回合・先手 <b>${G.active===H?'你':'電腦'}</b>・不動 你${G.fudo[H]?'🪷':'—'} 電腦${G.fudo[A]?'🪷':'—'}<br>`+
-   `離燈：你(${NAMES[H]}) ${fmt(lightDist(G.P[H]))}・電腦(${NAMES[A]}) ${fmt(lightDist(G.P[A]))}`;
-  if(G.plans&&G.plansRound===G.round)t+=`<br><span class="plan">電腦規劃：${pl(G.plans[A][0])} → ${pl(G.plans[A][1])}</span>`;
-  if(extra)t+=`<br><span class="ex">${extra}</span>`;top.innerHTML=t;}
-function waitClick(map){return new Promise(res=>{for(const [id,v] of Object.entries(map)){const b=document.getElementById(id);if(b)b.onclick=()=>res(v);}});}
-const RES_TXT={out:'出界 → 輸',hit:'撞到對手 → 輸',tpl:'模板碰到對手底座 → 輸',shadow:'踩到影子 → 贏！',ok:'安全'};
+function drawTop(extra=''){lastExtra=extra;if(!G.P)return;const H=G.human,A=1-H,N=NAMES(),ex=typeof extra==='function'?extra():extra;
+  let t=L(`第 <b>${G.round||1}</b>/6 回合・先手 <b>${G.active===H?'你':'電腦'}</b>・不動 你${G.fudo[H]?'🪷':'—'} 電腦${G.fudo[A]?'🪷':'—'}<br>`,
+          `Round <b>${G.round||1}</b>/6 · First: <b>${G.active===H?'You':'Computer'}</b> · Fudō You${G.fudo[H]?'🪷':'—'} CPU${G.fudo[A]?'🪷':'—'}<br>`,
+          `ラウンド <b>${G.round||1}</b>/6・先手 <b>${G.active===H?'あなた':'CPU'}</b>・不動 あなた${G.fudo[H]?'🪷':'—'} CPU${G.fudo[A]?'🪷':'—'}<br>`)+
+   L(`離燈：你(${N[H]}) ${fmt(lightDist(G.P[H]))}・電腦(${N[A]}) ${fmt(lightDist(G.P[A]))}`,`To light: You (${N[H]}) ${fmt(lightDist(G.P[H]))} · Computer (${N[A]}) ${fmt(lightDist(G.P[A]))}`,`ライトまで：あなた(${N[H]}) ${fmt(lightDist(G.P[H]))}・CPU(${N[A]}) ${fmt(lightDist(G.P[A]))}`);
+  if(G.plans&&G.plansRound===G.round)t+=`<br><span class="plan">${L('電腦規劃：','Computer\'s plan: ')}${pl(G.plans[A][0])} → ${pl(G.plans[A][1])}</span>`;
+  if(ex)t+=`<br><span class="ex">${ex}</span>`;top.innerHTML=t;}
+const pl=k=>KIND[k].ic+' '+lab(k);
+function bindWait(){if(!curWait)return;const {map,res}=curWait;for(const [id,v] of Object.entries(map)){const b=document.getElementById(id);if(b)b.onclick=()=>{curWait=null;res(v);};}}
+function waitClick(map){return new Promise(res=>{curWait={map,res};bindWait();});}
+const RES_T={out:['出界 → 輸','Out of bounds → lose'],hit:['撞到對手 → 輸','Collision → lose'],tpl:['模板碰到對手底座 → 輸','Template touches their base → lose'],shadow:['踩到影子 → 贏！','Shadowstep → win!'],ok:['安全','Safe']};
+const RT=r=>L(...RES_T[r]);
 const RES_COL={out:0xe25b4b,hit:0xe25b4b,tpl:0xe25b4b,shadow:0xf2c14e,ok:0x7be38a};
 // ---------- game state ----------
 const G=window.G={human:0,P:null,fudo:[true,true],round:0,active:0,level:'normal',over:false,log:[]};
@@ -367,12 +441,12 @@ function startPoses(fr,rr){return [{x:0,z:-CORNER,r:0+fr},{x:0,z:CORNER,r:Math.P
 async function setup(){
   G.over=false;G.round=0;G.plans=null;G.fudo=[true,true];G.log=[];ring.visible=ghost.visible=false;
   let first='me',face=0;
-  const render=()=>{G.P=startPoses(G.human===0?face:0,G.human===1?face:0);setPose(0,G.P[0]);setPose(1,G.P[1]);camHome();drawTop('開局設定');
-    h(`<div class="row"><span class="lbl">你用</span><button id="c0" class="${G.human===0?'on':''}">青蛙</button><button id="c1" class="${G.human===1?'on':''}">兔子</button>
-      <span class="lbl">難度</span><button id="l1" class="${G.level==='easy'?'on':''}">簡單</button><button id="l2" class="${G.level==='normal'?'on':''}">普通</button><button id="l3" class="${G.level==='hard'?'on':''}">困難</button></div>
-    <div class="row"><span class="lbl">先手</span><button id="f1" class="${first==='me'?'on':''}">我先</button><button id="f2" class="${first==='ai'?'on':''}">電腦先</button><button id="f3" class="${first==='rnd'?'on':''}">隨機</button></div>
-    <div class="row"><span class="lbl">面向</span><input id="face" type="range" min="-90" max="90" value="${Math.round(-face*180/Math.PI)}"><span id="fv">${Math.round(-face*180/Math.PI)}°</span><button id="go" class="go">開始</button></div>`);
-    document.getElementById('face').oninput=e=>{face=-e.target.value*Math.PI/180;document.getElementById('fv').textContent=e.target.value+'°';G.P=startPoses(G.human===0?face:0,G.human===1?face:0);setPose(0,G.P[0]);setPose(1,G.P[1]);};};
+  const render=()=>{G.P=startPoses(G.human===0?face:0,G.human===1?face:0);setPose(0,G.P[0]);setPose(1,G.P[1]);camHome();drawTop(()=>L('開局設定','Game setup'));
+    h(()=>`<div class="row"><span class="lbl">${L('你用','Play as')}</span><button id="c0" class="${G.human===0?'on':''}">${NAMES()[0]}</button><button id="c1" class="${G.human===1?'on':''}">${NAMES()[1]}</button>
+      <span class="lbl">${L('難度','Level')}</span><button id="l1" class="${G.level==='easy'?'on':''}">${L('簡單','Easy')}</button><button id="l2" class="${G.level==='normal'?'on':''}">${L('普通','Normal')}</button><button id="l3" class="${G.level==='hard'?'on':''}">${L('困難','Hard')}</button></div>
+    <div class="row"><span class="lbl">${L('先手','First')}</span><button id="f1" class="${first==='me'?'on':''}">${L('我先','Me')}</button><button id="f2" class="${first==='ai'?'on':''}">${L('電腦先','Computer')}</button><button id="f3" class="${first==='rnd'?'on':''}">${L('隨機','Random')}</button></div>
+    <div class="row"><span class="lbl">${L('面向','Facing')}</span><input id="face" type="range" min="-90" max="90" value="${Math.round(-face*180/Math.PI)}"><span id="fv">${Math.round(-face*180/Math.PI)}°</span><button id="go" class="go">${L('開始','Start')}</button></div>`,
+    ()=>{document.getElementById('face').oninput=e=>{face=-e.target.value*Math.PI/180;document.getElementById('fv').textContent=e.target.value+'°';G.P=startPoses(G.human===0?face:0,G.human===1?face:0);setPose(0,G.P[0]);setPose(1,G.P[1]);};});};
   render();
   for(;;){const v=await waitClick({c0:'c0',c1:'c1',f1:'me',f2:'ai',f3:'rnd',l1:'easy',l2:'normal',l3:'hard',go:'go'});
     if(v==='c0'||v==='c1'){G.human=v==='c0'?0:1;face=0;}else if(['me','ai','rnd'].includes(v))first=v;else if(['easy','normal','hard'].includes(v))G.level=v;else break;render();}
@@ -386,63 +460,63 @@ async function play(){const H=G.human,A=1-H;
     drawTop();
     // --- secret plotting ---
     let p1=null,p2=null;
-    const SH={S:'直線',L45:'左45°',R45:'右45°',L90:'左90°',R90:'右90°',U:'迴轉'};
-    const mvb=(id,k,on,dis)=>`<button id="${id}" class="mv ${on?'on':''}" ${dis?'disabled':''}><b>${KIND[k].ic}</b><small>${SH[k]}</small></button>`;
-    for(;;){h(`<div class="plot"><span class="lbl">第1步</span><div class="mvs">${MOVES.map(k=>mvb('a_'+k,k,p1===k,false)).join('')}</div>
-      <button id="ok" class="go" ${p1&&p2?'':'disabled'}>確定<br>規劃</button>
-      <span class="lbl">第2步</span><div class="mvs">${[...MOVES,'U'].map(k=>mvb('b_'+k,k,p2===k,k==='U'&&p1!=='S')).join('')}</div></div>`);
+    const SH=k=>L(...{S:['直線','Str.'],L45:['左45°','L45°'],R45:['右45°','R45°'],L90:['左90°','L90°'],R90:['右90°','R90°'],U:['迴轉','U-turn']}[k]);
+    const mvb=(id,k,on,dis)=>`<button id="${id}" class="mv ${on?'on':''}" ${dis?'disabled':''}><b>${KIND[k].ic}</b><small>${SH(k)}</small></button>`;
+    for(;;){h(()=>`<div class="plot"><span class="lbl">${L('第1步','1st')}</span><div class="mvs">${MOVES.map(k=>mvb('a_'+k,k,p1===k,false)).join('')}</div>
+      <button id="ok" class="go" ${p1&&p2?'':'disabled'}>${L('確定<br>規劃','Lock<br>in')}</button>
+      <span class="lbl">${L('第2步','2nd')}</span><div class="mvs">${[...MOVES,'U'].map(k=>mvb('b_'+k,k,p2===k,k==='U'&&p1!=='S')).join('')}</div></div>`);
       const m={ok:'ok'};MOVES.forEach(k=>{m['a_'+k]='a'+k;});[...MOVES,'U'].forEach(k=>{m['b_'+k]='b'+k;});
       const v=G.autoHuman?'ok':await waitClick(m);
       if(G.autoHuman){[p1,p2]=G.autoHuman(G);break;}
       if(v==='ok')break;if(v[0]==='a'){p1=v.slice(1);if(p2==='U'&&p1!=='S')p2=null;}else p2=v.slice(1);}
-    h('<div>電腦思考中…</div>');await sleep(60);
+    h(()=>`<div class="ttl">${L('電腦思考中…','Computer is thinking…')}</div>`);await sleep(60);
     const t0=performance.now();const aip=aiPlan(G.P,A,G.active,G.level);G.thinkMs=performance.now()-t0;
     const plans=[];plans[H]=[p1,p2];plans[A]=aip;G.plans=plans;
-    G.plansRound=G.round;drawTop('雙方規劃已公開');h('<div class="ttl">規劃公開！</div>');await sleep(700);
+    G.plansRound=G.round;drawTop(()=>L('雙方規劃已公開','Plans revealed'));h(()=>`<div class="ttl">${L('規劃公開！','Reveal!')}</div>`);await sleep(700);
     for(let k=0;k<2&&!G.over;k++)for(const m of [G.active,1-G.active]){if(G.over)break;await doStep(m,k,plans[m][k]);}
     if(G.over)return;}
   // --- time up ---
   const dh=lightDist(G.P[H]),da=lightDist(G.P[A]);let w;
   if(Math.abs(dh-da)<0.0001){w=G.fudo[H]&&!G.fudo[A]?H:G.fudo[A]&&!G.fudo[H]?A:-1;}else w=dh<da?H:A;
-  end(w,`6 回合結束：你 ${fmt(dh)}、電腦 ${fmt(da)}${Math.abs(dh-da)<0.0001?'（同距離，比不動）':''}`);}
-async function doStep(m,k,kind){const H=G.human,who=m===H?'你':'電腦';drawTop(`第 ${k+1} 步・${who}：${KIND[kind].label}`);
+  end(w,()=>L(`6 回合結束：你 ${fmt(dh)}、電腦 ${fmt(da)}${Math.abs(dh-da)<0.0001?'（同距離，比不動）':''}`,`Time's up: you ${fmt(dh)}, computer ${fmt(da)}${Math.abs(dh-da)<0.0001?' (tie – Fudō decides)':''}`,`タイムアップ：あなた ${fmt(dh)}、CPU ${fmt(da)}${Math.abs(dh-da)<0.0001?'（同距離：不動で決着）':''}`));}
+async function doStep(m,k,kind){const H=G.human,who=()=>m===H?L('你','You'):L('電腦','Computer');drawTop(()=>L(`第 ${k+1} 步・${who()}：${lab(kind)}`,`Step ${k+1} · ${who()}: ${lab(kind)}`,`${k+1}歩目・${who()}：${lab(kind)}`));
   const from={...G.P[m]};let useFudo=false;
   if(m===H){
     if(G.autoHuman)useFudo=false;else{
-    h(`<div class="ttl"><b>你的第 ${k+1} 步：${pl(kind)}</b> <span class="hint">（不動要在放模板前宣告）</span></div>
-      <div class="row"><button id="go" class="go">${kind==='U'?'原地轉 180°':'放下模板'}</button><button id="fd" class="fudo" ${G.fudo[H]?'':'disabled'}>🪷 使用不動</button></div>`);
+    h(()=>`<div class="ttl"><b>${L(`你的第 ${k+1} 步：`,`Your step ${k+1}: `,`あなたの${k+1}歩目：`)}${pl(kind)}</b> <span class="hint">${L('（不動要在放模板前宣告）','(declare Fudō before placing the template)')}</span></div>
+      <div class="row"><button id="go" class="go">${kind==='U'?L('轉向 180°','Turn 180°'):L('放下模板','Place template')}</button><button id="fd" class="fudo" ${G.fudo[H]?'':'disabled'}>🪷 ${L('使用不動','Use Fudō')}</button></div>`);
     useFudo=(await waitClick({go:false,fd:true}));}
   }else{
     const b=bestLanding(G.P,m,kind,kind==='U'?1:13);
     if(G.fudo[m]&&LOSE(b.res))useFudo=true;
-    h(`<div class="ttl">電腦的第 ${k+1} 步：${pl(kind)}${useFudo?'… <b>使用不動！</b>':''}</div>`);await sleep(700);
+    h(()=>`<div class="ttl">${L(`電腦的第 ${k+1} 步：`,`Computer step ${k+1}: `,`CPUの${k+1}歩目：`)}${pl(kind)}${useFudo?`… <b>${L('使用不動！','uses Fudō!')}</b>`:''}</div>`);await sleep(700);
     if(!useFudo){G.aiPick=b;}}
-  if(useFudo){G.fudo[m]=false;G.log.push([G.round,m,k,kind,'fudo']);drawTop(`${who}使用了「不動」，這一步取消`);await sleep(900);return;}
+  if(useFudo){G.fudo[m]=false;G.log.push([G.round,m,k,kind,'fudo']);drawTop(()=>L(`${who()}使用了「不動」，這一步取消`,`${who()} used Fudō – this step is cancelled`,`${who()}が不動を使用。この1歩は取り消し`));await sleep(900);return;}
   let np,res;
   if(kind==='U'){np={...from,r:from.r+Math.PI};await animPose(m,from,np,600);res=judge(G.P,m,np,kind);}
   else{const tm=tplMesh(from,kind);ghost.position.x=from.x;ghost.position.z=from.z;ghost.visible=true;await sleep(450);
     if(m===H&&!G.autoHuman){
       let t=0.5;const upd=()=>{np=landing(from,kind,t);res=judge(G.P,m,np,kind);setPose(m,np);actors[m].g.position.y=HOV;ring.position.x=np.x;ring.position.z=np.z;ringMat.color.setHex(RES_COL[res]);ring.visible=true;
-        const st=document.getElementById('st');if(st){st.textContent=RES_TXT[res];st.style.color='#'+RES_COL[res].toString(16).padStart(6,'0');}};
+        const st=document.getElementById('st');if(st){st.textContent=RT(res);st.style.color='#'+RES_COL[res].toString(16).padStart(6,'0');}};
       await carry(m,from,landing(from,kind,t),false,600);
-      h(`<div class="row"><span class="hint">◀ 左</span><input id="sl" type="range" min="0" max="100" value="50"><span class="hint">右 ▶</span></div>
-        <div class="row"><span>落點判定：<span id="st"></span></span><button id="ok" class="go">確定落點</button></div>`);
-      upd();document.getElementById('sl').oninput=e=>{t=e.target.value/100;upd();};
+      h(()=>`<div class="row"><span class="hint">◀ ${L('左','L')}</span><input id="sl" type="range" min="0" max="100" value="${Math.round(t*100)}"><span class="hint">${L('右','R')} ▶</span></div>
+        <div class="row"><span>${L('落點判定：','Landing check: ')}<span id="st"></span></span><button id="ok" class="go">${L('確定落點','Confirm')}</button></div>`,
+        ()=>{document.getElementById('sl').oninput=e=>{t=e.target.value/100;upd();};upd();});
       await waitClick({ok:1});await putDown(m,np);
     }else{const b=m===H?bestLanding(G.P,m,kind,9):G.aiPick;np=b.p;res=b.res;await carry(m,from,np,true,820);
       ring.position.x=np.x;ring.position.z=np.z;ringMat.color.setHex(RES_COL[res]);ring.visible=true;await sleep(500);}
     scene.remove(tm);}
   ghost.visible=false;
   G.P[m]=np;setPose(m,np);G.log.push([G.round,m,k,kind,res]);
-  if(LOSE(res)){end(1-m,`${who}${RES_TXT[res]}`);return;}
-  if(res==='shadow'){end(m,`${who}踩到了對手的影子！`);return;}
+  if(LOSE(res)){end(1-m,()=>L(`${who()}${RT(res)}`,`${who()}: ${RT(res)}`,`${who()}：${RT(res)}`));return;}
+  if(res==='shadow'){end(m,()=>L(`${who()}踩到了對手的影子！`,`${who()} stepped on the opponent's shadow!`,`${who()}が相手の影を踏んだ！`));return;}
   ring.visible=false;drawTop();await sleep(250);}
 function end(w,why){G.over=true;G.winner=w;const H=G.human;drawTop();
   ring.visible=!!ring.visible;
-  h(`<div class="ttl" style="font-size:20px"><b>${w===H?'🎉 你贏了':w===-1?'平手':'你輸了'}</b></div><div class="ttl">${why}</div><div class="row"><button id="again" class="go">再玩一次</button></div>`);
+  h(()=>`<div class="ttl" style="font-size:20px"><b>${w===H?L('🎉 你贏了','🎉 You win!'):w===-1?L('平手','Draw'):L('你輸了','You lose')}</b></div><div class="ttl">${typeof why==='function'?why():why}</div><div class="row"><button id="again" class="go">${L('再玩一次','Play again')}</button></div>`);
   if(G.onEnd)G.onEnd(w,why);
   waitClick({again:1}).then(()=>setup());}
-Promise.all([loadMini(FROG),loadMini(RABBIT)]).then(([a,b])=>{actors[0]=a;actors[1]=b;MODELS[0]=a.model;MODELS[1]=b.model;window.__gameReady=true;{const L=document.getElementById('loading');if(L){const go=()=>{L.style.opacity='0';setTimeout(()=>L.remove(),650);};requestAnimationFrame(()=>requestAnimationFrame(go));}}if(location.search.includes('trailer')){top.style.display=panel.style.display=vbtn.style.display=hbtn.style.display='none';}else setup();});
+Promise.all([loadMini(FROG),loadMini(RABBIT)]).then(([a,b])=>{actors[0]=a;actors[1]=b;MODELS[0]=a.model;MODELS[1]=b.model;window.__gameReady=true;{const L=document.getElementById('loading');if(L){const go=()=>{L.style.opacity='0';setTimeout(()=>L.remove(),650);};requestAnimationFrame(()=>requestAnimationFrame(go));}}if(location.search.includes('trailer')){top.style.display=panel.style.display=vbtn.style.display=hbtn.style.display=lbtn.style.display='none';}else setup();});
 window.GAPI={actors,setPose,tplMesh,ring,ringMat,KIND,landing,judge,bestLanding,aiPlan,simRound,lightDist,PLANS,startPoses,MODELS,tplPoly,setup};
 
 // ---------------- post-processing ----------------
