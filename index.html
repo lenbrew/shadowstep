@@ -243,6 +243,21 @@ function animPose(i,a,b,ms=650){if(FAST){setPose(i,b);return Promise.resolve();}
   let dr=b.r-a.r;dr=Math.atan2(Math.sin(dr),Math.cos(dr));if(Math.abs(Math.abs(b.r-a.r)-Math.PI)<1e-6)dr=b.r-a.r;
   return new Promise(res=>{const t0=performance.now();const f=()=>{let t=Math.min(1,(performance.now()-t0)/ms);const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
     setPose(i,{x:a.x+(b.x-a.x)*e,z:a.z+(b.z-a.z)*e,r:a.r+dr*e});if(t<1)requestAnimationFrame(f);else{setPose(i,b);res();}};f();});}
+const HOV=0.02;
+function easeIO(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+// pick the miniature up, carry it over, and (optionally) put it down — never slide it on the table
+function carry(i,a,b,down=true,ms=760){
+  if(FAST){setPose(i,b);if(!down)actors[i].g.position.y=HOV;return Promise.resolve();}
+  let dr=b.r-a.r;dr=Math.atan2(Math.sin(dr),Math.cos(dr));
+  const pu=0.22,pd=down?0.22:0;
+  return new Promise(res=>{const t0=performance.now();const f=()=>{const t=Math.min(1,(performance.now()-t0)/ms);
+    const y=HOV*(easeIO(Math.min(1,t/pu))-(down?easeIO(Math.max(0,(t-(1-pd))/pd)):0));
+    const e=easeIO(Math.min(1,Math.max(0,(t-pu)/(1-pu-pd))));
+    setPose(i,{x:a.x+(b.x-a.x)*e,z:a.z+(b.z-a.z)*e,r:a.r+dr*e});actors[i].g.position.y=y;
+    if(t<1)requestAnimationFrame(f);else{setPose(i,b);if(!down)actors[i].g.position.y=HOV;res();}};f();});}
+function putDown(i,p,ms=200){if(FAST){setPose(i,p);return Promise.resolve();}
+  return new Promise(res=>{const t0=performance.now();const f=()=>{const t=Math.min(1,(performance.now()-t0)/ms);
+    setPose(i,p);actors[i].g.position.y=HOV*(1-easeIO(t));if(t<1)requestAnimationFrame(f);else{setPose(i,p);res();}};f();});}
 function tplMesh(p,kind){const K=KIND[kind],P=PIECES[K.n],{g,T}=makeCard(K.n),mid=P.w/2-(P.w/2-0)+0;
   // makeCard centres the card; re-anchor so the local origin is the start-edge midpoint
   const shapeMid=TG[K.n].poly[0][0]-PIECES[K.n].shape[0][0]; // = -mid (mm)
@@ -257,35 +272,46 @@ const ghost=new THREE.Mesh(new THREE.RingGeometry(0.0145,0.0156,40),new THREE.Me
 // ---------- UI ----------
 const css=document.createElement('style');css.textContent=`
 #hud{display:none}
-#top{position:fixed;left:8px;right:8px;top:8px;color:#4a3426;font:14px/1.35 "Noto Sans TC",sans-serif;background:rgba(255,246,232,.88);padding:7px 11px;border-radius:12px;box-shadow:0 2px 8px rgba(80,40,10,.15)}
+#top{position:fixed;left:50%;transform:translateX(-50%);top:8px;width:min(560px,calc(100vw - 16px));box-sizing:border-box;color:#4a3426;font:13.5px/1.4 "Noto Sans TC",sans-serif;background:rgba(255,246,232,.88);padding:6px 11px;border-radius:12px;box-shadow:0 2px 8px rgba(80,40,10,.15)}
 #top b{color:#b5452f}
-#panel{position:fixed;left:8px;right:8px;bottom:8px;color:#4a3426;font:15px/1.4 "Noto Sans TC",sans-serif;background:rgba(255,246,232,.94);padding:10px 12px 12px;border-radius:14px;box-shadow:0 2px 10px rgba(80,40,10,.2)}
-#panel .row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;align-items:center}
-#panel button{font:15px "Noto Sans TC",sans-serif;border:0;border-radius:10px;padding:8px 11px;background:#f1dcc2;color:#4a3426}
+#top .plan{color:#6b4a35}
+#top .ex{color:#8a6a52}
+#panel{position:fixed;left:50%;transform:translateX(-50%);bottom:8px;width:min(560px,calc(100vw - 16px));box-sizing:border-box;color:#4a3426;font:14px/1.35 "Noto Sans TC",sans-serif;background:rgba(255,246,232,.94);padding:8px 10px;border-radius:14px;box-shadow:0 2px 10px rgba(80,40,10,.2)}
+#panel .row{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;align-items:center;justify-content:center}
+#panel .ttl{text-align:center}
+#panel .hint{font-size:12px;color:#8a6a52}
+#panel button{font:14px "Noto Sans TC",sans-serif;border:0;border-radius:10px;padding:7px 11px;background:#f1dcc2;color:#4a3426;cursor:pointer}
 #panel button.on{background:#c8553d;color:#fff}
 #panel button.go{background:#3f7d4e;color:#fff;font-weight:bold}
 #panel button.fudo{background:#6b5a8e;color:#fff}
-#panel button:disabled{opacity:.35}
-#panel input[type=range]{flex:1}
+#panel button:disabled{opacity:.35;cursor:default}
+#panel input[type=range]{flex:1;max-width:340px}
+#panel .plot{display:grid;grid-template-columns:auto auto auto;gap:5px 8px;align-items:center;justify-content:center}
+#panel .mvs{display:flex;gap:4px}
+#panel .mv{display:flex;flex-direction:column;align-items:center;min-width:44px;padding:4px 5px;line-height:1.1}
+#panel .mv b{font-size:17px;font-weight:normal}#panel .mv small{font-size:11px}
+#panel .plot .go{grid-column:3;grid-row:1/3;align-self:stretch;padding:6px 10px;white-space:nowrap;line-height:1.3}
 #st{font-weight:bold}
-#view{position:fixed;right:10px;top:64px;border:0;border-radius:10px;padding:6px 10px;background:rgba(255,246,232,.9);color:#4a3426;font:13px sans-serif}
-.lbl{min-width:52px;color:#8a6a52;font-size:13px}`;document.head.appendChild(css);
+#view{position:fixed;right:10px;top:84px;border:0;border-radius:10px;padding:6px 10px;background:rgba(255,246,232,.9);color:#4a3426;font:13px sans-serif}
+.lbl{color:#8a6a52;font-size:12.5px;white-space:nowrap}`;document.head.appendChild(css);
 const top=document.createElement('div');top.id='top';document.body.appendChild(top);
 const panel=document.createElement('div');panel.id='panel';document.body.appendChild(panel);
 const vbtn=document.createElement('button');vbtn.id='view';vbtn.textContent='俯視';document.body.appendChild(vbtn);
 let topView=false;function camHome(){const s=G.human===0?-1:1;
   const por=innerWidth<innerHeight;cam.fov=por?52:34;cam.updateProjectionMatrix();
   if(topView){cam.position.set(0.0,por?0.62:0.58,0.06*s);ctl.target.set(0,0,0.03*s*(por?1:0));}
-  else if(por){cam.position.set(0.16,0.40,0.40*s);ctl.target.set(0,0,0.05*s);}
-  else{cam.position.set(0.20,0.30,0.44*s);ctl.target.set(0,0,0.0);}ctl.update();}
+  else if(por){cam.position.set(0.15,0.44,0.50*s);ctl.target.set(0,0,0.085*s);}
+  else{cam.position.set(0.20,0.30,0.46*s);ctl.target.set(0,0,0.04*s);}ctl.update();}
 addEventListener('resize',()=>camHome());
 vbtn.onclick=()=>{topView=!topView;vbtn.textContent=topView?'斜視':'俯視';camHome();};
 const h=(html)=>{panel.innerHTML=html;};
 const fmt=m=>(m*1000).toFixed(0)+'mm';
+const pl=k=>KIND[k].ic+' '+KIND[k].label;
 function drawTop(extra=''){if(!G.P)return;const H=G.human,A=1-H;
-  top.innerHTML=`第 <b>${G.round||1}</b>/6 回合・先手：<b>${G.active===H?'你':'電腦'}</b><br>`+
-   `離燈：你(${NAMES[H]}) ${fmt(lightDist(G.P[H]))}・電腦(${NAMES[A]}) ${fmt(lightDist(G.P[A]))}<br>`+
-   `不動：你 ${G.fudo[H]?'🪷':'—'}・電腦 ${G.fudo[A]?'🪷':'—'}${extra?'<br>'+extra:''}`;}
+  let t=`第 <b>${G.round||1}</b>/6 回合・先手 <b>${G.active===H?'你':'電腦'}</b>・不動 你${G.fudo[H]?'🪷':'—'} 電腦${G.fudo[A]?'🪷':'—'}<br>`+
+   `離燈：你(${NAMES[H]}) ${fmt(lightDist(G.P[H]))}・電腦(${NAMES[A]}) ${fmt(lightDist(G.P[A]))}`;
+  if(G.plans&&G.plansRound===G.round)t+=`<br><span class="plan">電腦規劃：${pl(G.plans[A][0])} → ${pl(G.plans[A][1])}</span>`;
+  if(extra)t+=`<br><span class="ex">${extra}</span>`;top.innerHTML=t;}
 function waitClick(map){return new Promise(res=>{for(const [id,v] of Object.entries(map)){const b=document.getElementById(id);if(b)b.onclick=()=>res(v);}});}
 const RES_TXT={out:'出界 → 輸',hit:'撞到對手 → 輸',tpl:'模板碰到對手底座 → 輸',shadow:'踩到影子 → 贏！',ok:'安全'};
 const RES_COL={out:0xe25b4b,hit:0xe25b4b,tpl:0xe25b4b,shadow:0xf2c14e,ok:0x7be38a};
@@ -293,14 +319,13 @@ const RES_COL={out:0xe25b4b,hit:0xe25b4b,tpl:0xe25b4b,shadow:0xf2c14e,ok:0x7be38
 const G=window.G={human:0,P:null,fudo:[true,true],round:0,active:0,level:'normal',over:false,log:[]};
 function startPoses(fr,rr){return [{x:0,z:-CORNER,r:0+fr},{x:0,z:CORNER,r:Math.PI+rr}];}
 async function setup(){
-  G.over=false;G.round=0;G.fudo=[true,true];G.log=[];ring.visible=ghost.visible=false;
+  G.over=false;G.round=0;G.plans=null;G.fudo=[true,true];G.log=[];ring.visible=ghost.visible=false;
   let first='me',face=0;
   const render=()=>{G.P=startPoses(G.human===0?face:0,G.human===1?face:0);setPose(0,G.P[0]);setPose(1,G.P[1]);camHome();drawTop('開局設定');
-    h(`<div class="row"><span class="lbl">你用</span><button id="c0" class="${G.human===0?'on':''}">青蛙</button><button id="c1" class="${G.human===1?'on':''}">兔子</button></div>
+    h(`<div class="row"><span class="lbl">你用</span><button id="c0" class="${G.human===0?'on':''}">青蛙</button><button id="c1" class="${G.human===1?'on':''}">兔子</button>
+      <span class="lbl">難度</span><button id="l1" class="${G.level==='easy'?'on':''}">簡單</button><button id="l2" class="${G.level==='normal'?'on':''}">普通</button><button id="l3" class="${G.level==='hard'?'on':''}">困難</button></div>
     <div class="row"><span class="lbl">先手</span><button id="f1" class="${first==='me'?'on':''}">我先</button><button id="f2" class="${first==='ai'?'on':''}">電腦先</button><button id="f3" class="${first==='rnd'?'on':''}">隨機</button></div>
-    <div class="row"><span class="lbl">難度</span><button id="l1" class="${G.level==='easy'?'on':''}">簡單</button><button id="l2" class="${G.level==='normal'?'on':''}">普通</button><button id="l3" class="${G.level==='hard'?'on':''}">困難</button></div>
-    <div class="row"><span class="lbl">面向</span><input id="face" type="range" min="-90" max="90" value="${Math.round(-face*180/Math.PI)}"><span id="fv">${Math.round(-face*180/Math.PI)}°</span></div>
-    <div class="row"><button id="go" class="go">開始</button></div>`);
+    <div class="row"><span class="lbl">面向</span><input id="face" type="range" min="-90" max="90" value="${Math.round(-face*180/Math.PI)}"><span id="fv">${Math.round(-face*180/Math.PI)}°</span><button id="go" class="go">開始</button></div>`);
     document.getElementById('face').oninput=e=>{face=-e.target.value*Math.PI/180;document.getElementById('fv').textContent=e.target.value+'°';G.P=startPoses(G.human===0?face:0,G.human===1?face:0);setPose(0,G.P[0]);setPose(1,G.P[1]);};};
   render();
   for(;;){const v=await waitClick({c0:'c0',c1:'c1',f1:'me',f2:'ai',f3:'rnd',l1:'easy',l2:'normal',l3:'hard',go:'go'});
@@ -315,10 +340,11 @@ async function play(){const H=G.human,A=1-H;
     drawTop();
     // --- secret plotting ---
     let p1=null,p2=null;
-    for(;;){h(`<div><b>秘密規劃</b>：選第 1 步和第 2 步（電腦看不到）</div>
-      <div class="row"><span class="lbl">第 1 步</span>${MOVES.map(k=>`<button id="a_${k}" class="${p1===k?'on':''}">${KIND[k].ic} ${KIND[k].label}</button>`).join('')}</div>
-      <div class="row"><span class="lbl">第 2 步</span>${[...MOVES,'U'].map(k=>`<button id="b_${k}" class="${p2===k?'on':''}" ${k==='U'&&p1!=='S'?'disabled':''}>${KIND[k].ic} ${KIND[k].label}</button>`).join('')}</div>
-      <div class="row"><button id="ok" class="go" ${p1&&p2?'':'disabled'}>確定規劃</button></div>`);
+    const SH={S:'直線',L45:'左45°',R45:'右45°',L90:'左90°',R90:'右90°',U:'迴轉'};
+    const mvb=(id,k,on,dis)=>`<button id="${id}" class="mv ${on?'on':''}" ${dis?'disabled':''}><b>${KIND[k].ic}</b><small>${SH[k]}</small></button>`;
+    for(;;){h(`<div class="plot"><span class="lbl">第1步</span><div class="mvs">${MOVES.map(k=>mvb('a_'+k,k,p1===k,false)).join('')}</div>
+      <button id="ok" class="go" ${p1&&p2?'':'disabled'}>確定<br>規劃</button>
+      <span class="lbl">第2步</span><div class="mvs">${[...MOVES,'U'].map(k=>mvb('b_'+k,k,p2===k,k==='U'&&p1!=='S')).join('')}</div></div>`);
       const m={ok:'ok'};MOVES.forEach(k=>{m['a_'+k]='a'+k;});[...MOVES,'U'].forEach(k=>{m['b_'+k]='b'+k;});
       const v=G.autoHuman?'ok':await waitClick(m);
       if(G.autoHuman){[p1,p2]=G.autoHuman(G);break;}
@@ -326,9 +352,7 @@ async function play(){const H=G.human,A=1-H;
     h('<div>電腦思考中…</div>');await sleep(60);
     const t0=performance.now();const aip=aiPlan(G.P,A,G.active,G.level);G.thinkMs=performance.now()-t0;
     const plans=[];plans[H]=[p1,p2];plans[A]=aip;G.plans=plans;
-    h(`<div><b>同時公開</b></div><div>你：${KIND[p1].label} → ${KIND[p2].label}</div><div>電腦：${KIND[aip[0]].label} → ${KIND[aip[1]].label}</div>
-      <div class="row"><button id="go" class="go">開始執行</button></div>`);
-    if(!G.autoHuman)await waitClick({go:1});
+    G.plansRound=G.round;drawTop('雙方規劃已公開');h('<div class="ttl">規劃公開！</div>');await sleep(700);
     for(let k=0;k<2&&!G.over;k++)for(const m of [G.active,1-G.active]){if(G.over)break;await doStep(m,k,plans[m][k]);}
     if(G.over)return;}
   // --- time up ---
@@ -339,27 +363,27 @@ async function doStep(m,k,kind){const H=G.human,who=m===H?'你':'電腦';drawTop
   const from={...G.P[m]};let useFudo=false;
   if(m===H){
     if(G.autoHuman)useFudo=false;else{
-    h(`<div><b>你的第 ${k+1} 步：${KIND[kind].ic} ${KIND[kind].label}</b></div><div style="font-size:13px;color:#8a6a52">要用「不動」必須在放模板之前宣告</div>
+    h(`<div class="ttl"><b>你的第 ${k+1} 步：${pl(kind)}</b> <span class="hint">（不動要在放模板前宣告）</span></div>
       <div class="row"><button id="go" class="go">${kind==='U'?'原地轉 180°':'放下模板'}</button><button id="fd" class="fudo" ${G.fudo[H]?'':'disabled'}>🪷 使用不動</button></div>`);
     useFudo=(await waitClick({go:false,fd:true}));}
   }else{
     const b=bestLanding(G.P,m,kind,kind==='U'?1:13);
     if(G.fudo[m]&&LOSE(b.res))useFudo=true;
-    h(`<div>電腦的第 ${k+1} 步：${KIND[kind].label}${useFudo?'… <b>使用不動！</b>':''}</div>`);await sleep(700);
+    h(`<div class="ttl">電腦的第 ${k+1} 步：${pl(kind)}${useFudo?'… <b>使用不動！</b>':''}</div>`);await sleep(700);
     if(!useFudo){G.aiPick=b;}}
   if(useFudo){G.fudo[m]=false;G.log.push([G.round,m,k,kind,'fudo']);drawTop(`${who}使用了「不動」，這一步取消`);await sleep(900);return;}
   let np,res;
   if(kind==='U'){np={...from,r:from.r+Math.PI};await animPose(m,from,np,600);res=judge(G.P,m,np,kind);}
   else{const tm=tplMesh(from,kind);ghost.position.x=from.x;ghost.position.z=from.z;ghost.visible=true;await sleep(450);
     if(m===H&&!G.autoHuman){
-      let t=0.5;const upd=()=>{np=landing(from,kind,t);res=judge(G.P,m,np,kind);setPose(m,np);ring.position.x=np.x;ring.position.z=np.z;ringMat.color.setHex(RES_COL[res]);ring.visible=true;
+      let t=0.5;const upd=()=>{np=landing(from,kind,t);res=judge(G.P,m,np,kind);setPose(m,np);actors[m].g.position.y=HOV;ring.position.x=np.x;ring.position.z=np.z;ringMat.color.setHex(RES_COL[res]);ring.visible=true;
         const st=document.getElementById('st');if(st){st.textContent=RES_TXT[res];st.style.color='#'+RES_COL[res].toString(16).padStart(6,'0');}};
-      await animPose(m,from,landing(from,kind,t),650);
-      h(`<div><b>選落點</b>：後標記可接在終點弧線任何位置</div><div class="row"><span>◀ 左</span><input id="sl" type="range" min="0" max="100" value="50"><span>右 ▶</span></div>
-        <div>判定預覽：<span id="st"></span></div><div class="row"><button id="ok" class="go">確定落點</button></div>`);
+      await carry(m,from,landing(from,kind,t),false,600);
+      h(`<div class="row"><span class="hint">◀ 左</span><input id="sl" type="range" min="0" max="100" value="50"><span class="hint">右 ▶</span></div>
+        <div class="row"><span>落點判定：<span id="st"></span></span><button id="ok" class="go">確定落點</button></div>`);
       upd();document.getElementById('sl').oninput=e=>{t=e.target.value/100;upd();};
-      await waitClick({ok:1});
-    }else{const b=m===H?bestLanding(G.P,m,kind,9):G.aiPick;np=b.p;res=b.res;await animPose(m,from,np,800);
+      await waitClick({ok:1});await putDown(m,np);
+    }else{const b=m===H?bestLanding(G.P,m,kind,9):G.aiPick;np=b.p;res=b.res;await carry(m,from,np,true,820);
       ring.position.x=np.x;ring.position.z=np.z;ringMat.color.setHex(RES_COL[res]);ring.visible=true;await sleep(500);}
     scene.remove(tm);}
   ghost.visible=false;
@@ -369,11 +393,11 @@ async function doStep(m,k,kind){const H=G.human,who=m===H?'你':'電腦';drawTop
   ring.visible=false;drawTop();await sleep(250);}
 function end(w,why){G.over=true;G.winner=w;const H=G.human;drawTop();
   ring.visible=!!ring.visible;
-  h(`<div style="font-size:20px"><b>${w===H?'🎉 你贏了':w===-1?'平手':'你輸了'}</b></div><div>${why}</div><div class="row"><button id="again" class="go">再玩一次</button></div>`);
+  h(`<div class="ttl" style="font-size:20px"><b>${w===H?'🎉 你贏了':w===-1?'平手':'你輸了'}</b></div><div class="ttl">${why}</div><div class="row"><button id="again" class="go">再玩一次</button></div>`);
   if(G.onEnd)G.onEnd(w,why);
   waitClick({again:1}).then(()=>setup());}
-Promise.all([loadMini(FROG),loadMini(RABBIT)]).then(([a,b])=>{actors[0]=a;actors[1]=b;MODELS[0]=a.model;MODELS[1]=b.model;window.__gameReady=true;setup();});
-window.GAPI={landing,judge,bestLanding,aiPlan,simRound,lightDist,PLANS,startPoses,MODELS,tplPoly,setup};
+Promise.all([loadMini(FROG),loadMini(RABBIT)]).then(([a,b])=>{actors[0]=a;actors[1]=b;MODELS[0]=a.model;MODELS[1]=b.model;window.__gameReady=true;if(location.search.includes('trailer')){top.style.display=panel.style.display=vbtn.style.display='none';}else setup();});
+window.GAPI={actors,setPose,tplMesh,ring,ringMat,KIND,landing,judge,bestLanding,aiPlan,simRound,lightDist,PLANS,startPoses,MODELS,tplPoly,setup};
 
 // ---------------- post-processing ----------------
 const composer=new EffectComposer(renderer);
@@ -391,4 +415,56 @@ const still=location.search.includes('still');
 window.shot=()=>{ctl.update();updateFocus();composer.render();};
 if(!still) renderer.setAnimationLoop(()=>{ctl.update();updateFocus();composer.render();});
 window.cam=cam;window.ctl=ctl;window.__ready=true;
+// ======================= TRAILER TIMELINE (?trailer) =======================
+if(location.search.includes('trailer')){
+const A=GAPI;
+const base0={hemi:hemi.intensity,sun:sun.intensity,fill:fill.intensity,rim:rim.intensity,spot:spot.intensity};
+const RAB={x:-0.035,z:0.015,r:Math.PI+0.35};
+let FROG0={x:0.07,z:-0.10,r:0}, KIND_='S', TT=0.5;
+window.findConfig=function(){const P=[null,null];P[1]=RAB;let best=null;
+  for(let x=0.0;x<=0.14;x+=0.004)for(let z=-0.16;z<=-0.03;z+=0.004)for(const r of [-0.35,-0.2,0,0.2]){
+    const f={x,z,r};P[0]=f;if(Math.hypot(x-RAB.x,z-RAB.z)<0.06)continue;
+    for(const t of [0.5]){const np=A.landing(f,'S',t);const res=A.judge(P,0,np,'S');
+      if(res!=='shadow')continue;
+      // prefer: deep overlap (shadow under base centre) and start well outside shadow
+      const S=shadowTrisFor(RAB);const deep=circleHitsShadow(np.x,np.z,0.006,S),startIn=circleHitsShadow(f.x,f.z,0.02,S);
+      if(!deep||startIn)continue;const sc=-Math.abs(np.x-(RAB.x+0.07))-Math.abs(r)*0.02;
+      if(!best||sc>best.sc)best={sc,f,np,t};}}
+  return best;};
+function shadowTrisFor(p){return shadowTris(p,MODELS[1]);}
+// ---- easing / helpers ----
+const cl=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),sm=(a,b,t)=>{t=cl((t-a)/(b-a));return t*t*(3-2*t);},lerp=(a,b,t)=>a+(b-a)*t;
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+let tpl=null;
+window.setupTrailer=function(cfg){if(cfg){FROG0=cfg.f;TT=cfg.t;}
+  A.setPose(1,RAB);A.setPose(0,FROG0);
+  tpl=A.tplMesh(FROG0,KIND_);tpl.userData.base=tpl.matrix.clone();
+  const st=document.createElement('style');st.textContent='#top,#panel,#view{display:none!important}';document.head.appendChild(st);};
+// ---- v2 timeline: 1.0 light on | 1.0-4.8 shadows stretch | 4.0-6.0 continuous dolly down | 5.5 template | 6.2 pick up | 7.9 put down ----
+let camCurve=null,tgtCurve=null;const C0=0.8,C1=7.05;
+function buildCam(){const L=landTarget();
+  camCurve=new THREE.CatmullRomCurve3([V(0.31,0.43,0.37),V(0.26,0.30,0.32),V(0.215,0.13,0.20),V(0.19,0.072,0.145),V(0.168,0.056,0.122)],false,'centripetal');
+  tgtCurve=new THREE.CatmullRomCurve3([V(0.02,0,0),V(0.02,0,0),V(L.x-0.02,0.003,L.z-0.02),V(L.x-0.028,0.006,L.z-0.026),V(L.x-0.02,0.008,L.z-0.015)],false,'centripetal');}
+// one continuous move, constant-speed along the path (arc length), single gentle ease-in/out
+function camAt(t){if(!camCurve)buildCam();const x=cl((t-C0)/(C1-C0));const u=0.5-0.5*Math.cos(Math.PI*x);
+  return {p:camCurve.getPointAt(u),q:tgtCurve.getPoint(u)};}
+let _land=null;function landTarget(){if(!_land)_land=A.landing(FROG0,KIND_,TT);return _land;}
+window.T=function(t){
+  const on=t>=0.8?1:0, amb=sm(0.8,2.6,t)*lerp(0.55,0.42,sm(3.5,5.5,t));
+  spot.intensity=base0.spot*on*(t<0.92?0.55+0.45*Math.sin((t-0.8)*40)**2:1);glow.visible=!!on;
+  hemi.intensity=base0.hemi*amb;sun.intensity=base0.sun*amb*0.6;fill.intensity=base0.fill*amb;rim.intensity=base0.rim*amb;
+  const hy=lerp(0.30,0.13,sm(0.8,4.2,t));spot.position.y=hy;glow.position.y=hy;
+  const drop=sm(4.9,5.25,t);tpl.visible=t>=4.9;
+  if(tpl.visible){const m=tpl.userData.base.clone();m.elements[13]+=(1-drop)*0.03;tpl.matrix.copy(m);}
+  const L=landTarget();let dr=L.r-FROG0.r;dr=Math.atan2(Math.sin(dr),Math.cos(dr));
+  const up=sm(5.45,5.75,t), mv=sm(5.75,6.6,t), down=sm(6.6,6.9,t), lift=0.028*(up-down);
+  A.setPose(0,{x:lerp(FROG0.x,L.x,mv),z:lerp(FROG0.z,L.z,mv),r:FROG0.r+dr*mv});
+  A.actors[0].g.position.y=lift;A.actors[0].g.rotation.z=0.06*Math.sin(Math.PI*mv)*(up-down);
+  A.ring.visible=t>=6.9;A.ringMat.color.setHex(0xf2c14e);A.ring.position.x=L.x;A.ring.position.z=L.z;A.ringMat.opacity=0.95;
+  const c=camAt(t);cam.position.copy(c.p);cam.lookAt(c.q);
+  bokeh.uniforms.focus.value=cam.position.distanceTo(c.q);
+  bokeh.uniforms.aperture.value=lerp(0.0016,0.0035,sm(3.0,6.0,t));
+  composer.render();return true;};
+window.__trailerReady=true;}
+
 </script></body></html>
