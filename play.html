@@ -270,7 +270,8 @@ function aiExecHard(P0,ai,plans,active,idx,fudo){
     if(kind==='U'){const np={...P[m],r:P[m].r+Math.PI};o.push({p:np,res:judge(P,m,np,kind),t:null});}
     else for(const t of ts){const np=landing(P[m],kind,t);o.push({p:np,res:judge(P,m,np,kind),t});}
     if(canF)o.push({fudo:true});return o;}
-  function val(P,i,fd){if(i>=4)return evalPos(P,ai);
+  const FV=(window.FV_AI!=null?window.FV_AI:200);   // value of still holding Fudō
+  function val(P,i,fd){if(i>=4)return evalPos(P,ai)+FV*((fd[ai]?1:0)-(fd[1-ai]?1:0));
     const m=order[i],kind=plans[m][i>>1];
     if(m===ai){let best=-1e9;for(const o of opts(P,m,kind,TA,fd[ai])){let v;
         if(o.fudo)v=val(P,i+1,[ai===0?false:fd[0],ai===1?false:fd[1]]);
@@ -283,7 +284,7 @@ function aiExecHard(P0,ai,plans,active,idx,fudo){
     return 0.6*worst+0.4*sum/n;}   // a strong but not omniscient opponent
   const kind=plans[ai][idx>>1];let best=null;
   for(const o of opts(P0,ai,kind,[0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1],fudo[ai])){let v;
-    if(o.fudo)v=val(P0,idx+1,[ai===0?false:fudo[0],ai===1?false:fudo[1]])-5;     // small bias: keep Fudō unless it helps
+    if(o.fudo)v=val(P0,idx+1,[ai===0?false:fudo[0],ai===1?false:fudo[1]]);
     else if(LOSE(o.res))v=-1e4;else if(o.res==='shadow')v=1e4+1;else{const Q=[...P0];Q[ai]=o.p;v=val(Q,idx+1,fudo);}
     if(!best||v>best.v)best={...o,v};}
   return best;}
@@ -621,7 +622,7 @@ function decodeRec2(code){const rd=BitR(b64d(code.slice(2)));const h=rd.get(1),l
     for(let j=0;j<ns;j++){const m=order[j],k=p[m][j>>1];const f=rd.get(1);if(f)s.push({m,k,f:1});else if(k==='U')s.push({m,k});else s.push({m,k,t:rd.get(10)/1000});}
     R.push({a,p,s});}
   return {v:2,h,lv,a0,r:[r0,r1],d,R};}
-const PRESETS={ug1:'S20KSAAPKrFYQIfQfRzH0BS4-gyA-g'};
+const PRESETS={ug1:'S20KSAAPKrFYQIfQfRzH0BS4-gyA-g',ug2:'S2372AAPK1BYQIfQABaA-iy2AAWgfQ'};
 function encodeRec(r){return encodeRec2(r);}
 function encodeRec1(r){const rounds=r.R.map(R=>R.a+':'+(R.p?R.p.map(x=>x.join('.')).join('.'):'')+':'+R.s.map(s=>s.m+s.k+(s.f?'!':s.k==='U'?'':Math.round(s.t*1000))).join(',')).join('/');
   return 'SS1.'+b64u([r.h,r.lv,r.a0,r.r[0],r.r[1],r.d,rounds].join('|'));}
