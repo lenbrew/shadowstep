@@ -1,0 +1,19 @@
+SHADOWSTEP (β) 對局紀錄
+日期: 11/22/2026, 5:50:21 AM
+你: 青蛙（阿座）／電腦: 兔子　難度: normal
+結果: 你輸了（第2 回合・你出界 → 輸）
+
+第 1 回合　先手: 你
+  規劃　你: 右大蛇 (右柳＋左柳)｜電腦: 左稲妻 (左曲尺＋右曲尺)
+  ① 你　右柳（右 45°） → 安全
+  ② 電腦　左曲尺（左 90°） → 安全
+  ③ 你　左柳（左 45°） → 安全
+  ④ 電腦　右曲尺（右 90°） → 安全
+第 2 回合　先手: 你
+  規劃　你: 左昇龍 (左曲尺＋右柳)｜電腦: 愚直一徹 (愚直＋愚直)
+  ① 你　左曲尺（左 90°） → 安全
+  ② 電腦　愚直（直線） → 使用不動，這一步取消
+  ③ 你　右柳（右 45°） → 出界 → 輸
+
+重播代碼: SS1.MHxub3JtYWx8MHwwfDMuMjYzMXwxNzk1MzI2NjIxMzQ2fDA6UjQ1Lkw0NS5MOTAuUjkwOjBSNDU4NzUsMUw5MDEwMDAsMEw0NTEwMDAsMVI5MDAvMDpMOTAuUjQ1LlMuUzowTDkwMTAwMCwxUyEsMFI0NTA
+重播網址: file:///work/shadowstep/game/shadowstep_game.html?replay=SS1.MHxub3JtYWx8MHwwfDMuMjYzMXwxNzk1MzI2NjIxMzQ2fDA6UjQ1Lkw0NS5MOTAuUjkwOjBSNDU4NzUsMUw5MDEwMDAsMEw0NTEwMDAsMVI5MDAvMDpMOTAuUjQ1LlMuUzowTDkwMTAwMCwxUyEsMFI0NTA
